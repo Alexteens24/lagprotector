@@ -1,0 +1,8 @@
+# LagProtector — messages (& = color codes for players)
+command:
+  no-permission: "&cYou do not have permission."
+  reload-success: "&aLagProtector configuration reloaded."
+  usage: "&eUsage: /lagprotector reload"
+log:
+  # Placeholder: {count} = entities removed in one mob cleanup pass
+  cull-removed: "[LagProtector] Removed {count} excess entities (cull pass)."

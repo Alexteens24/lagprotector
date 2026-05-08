@@ -1,0 +1,98 @@
+/*
+ * LagProtector — Copyright 2026 alexisbinh.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+plugins {
+    id 'java'
+    id 'eclipse'
+    id 'idea'
+    id 'com.gradleup.shadow' version '9.3.1'
+}
+
+group = 'net.alexisbinh'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+}
+
+dependencies {
+    compileOnly 'io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT'
+    compileOnly 'org.jetbrains:annotations:26.1.0'
+    // Also compileOnly so Eclipse/VS Code classpath stays correct if .classpath is stale; shadowJar still uses implementation.
+    compileOnly 'org.bstats:bstats-bukkit:3.2.1'
+
+    implementation 'org.bstats:bstats-bukkit:3.2.1'
+
+    testImplementation 'com.github.seeseemelk:MockBukkit-v1.21:3.133.2'
+    testImplementation platform('org.junit:junit-bom:5.14.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.mockito:mockito-core:5.23.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.23.0'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+    options.compilerArgs += ['-Xlint:deprecation']
+}
+
+tasks.named('test', Test).configure {
+    useJUnitPlatform()
+}
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
+eclipse {
+    classpath {
+        defaultOutputDir = file('build-eclipse/classes')
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}
+
+jar {
+    enabled = false
+    archiveBaseName = 'LagProtector'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    exclude('net/alexisbinh/tools/**')
+}
+
+shadowJar {
+    archiveBaseName = 'LagProtector'
+    archiveClassifier = ''
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    exclude('net/alexisbinh/tools/**')
+    from(rootProject.layout.projectDirectory) {
+        include 'LICENSE', 'NOTICE'
+        into 'META-INF'
+    }
+    mergeServiceFiles()
+    dependencies {
+        exclude { dep -> dep.moduleGroup != 'org.bstats' }
+    }
+    relocate 'org.bstats', 'net.alexisbinh.lib.bstats'
+}
+
+tasks.register('generateDefaultConfig', JavaExec) {
+    group = 'build'
+    description = 'Write a minimal default config.yml to the path in args (dev; overwrites target file).'
+    dependsOn tasks.compileJava
+    classpath = files(sourceSets.main.output.classesDirs) + configurations.compileClasspath
+    mainClass = 'net.alexisbinh.tools.GenerateDefaults'
+    args = [layout.projectDirectory.file('src/main/resources/config.yml').asFile.absolutePath]
+}

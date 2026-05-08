@@ -1,0 +1,12 @@
+/.gradle/
+/build/
+/build-eclipse/
+/.idea/
+*.iml
+.DS_Store
+
+# Eclipse (optional: ./gradlew eclipse)
+.classpath
+.project
+.settings/
+bin/

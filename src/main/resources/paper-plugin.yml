@@ -1,0 +1,10 @@
+name: LagProtector
+version: '1.0.0'
+main: net.alexisbinh.LagProtectorPlugin
+api-version: '1.21.4'
+folia-supported: true
+description: Per-chunk limits for entities and mechanics blocks on Paper or Folia 1.21.4 and newer.
+author: alexisbinh
+permissions:
+  lagprotector.reload:
+    default: op

@@ -1,0 +1,382 @@
+# =============================================================================
+# LagProtector — Paper / Folia 1.21.4+
+# =============================================================================
+#
+# Quick overview
+#   Section 1 — Global (debug, logging)
+#   Section 2 — Ignore (protect certain entities / world policy)
+#   Section 3 — Spawn limits (EntitySpawn + Mobs + excluded chunks)
+#   Section 4 — AutoClean (scheduled mob / block cleanup waves)
+#   Section 5 — Block limits (place + piston moves across chunk borders)
+#   Section 6 — EntityTypes (per-type spawn limits, cleanup, natural spawn rules)
+#
+# Heaviest server impact (tune first): debug · Log · AutoClean timing & slice ·
+#   GroupChunksRadius · CheckPistonMove · many EntityTypes with low Limits
+#
+# Mob-cap types without an EntityTypes entry use DefaultPerType. Other types use
+# EntityTypes rows or FallbackNonLivingLimit when set.
+#
+# =============================================================================
+# Section 1 — GLOBAL
+# =============================================================================
+
+debug: false
+
+Log:
+  Enabled: false   # When true, may log cull activity (see messages.yml key log.cull-removed)
+  From: 3
+
+# =============================================================================
+# Section 2 — IGNORE
+# =============================================================================
+# Entities matching these rules are skipped for culling and affect world policy.
+
+Ignore:
+  FullArmorStands: true
+  EntityWithPickedItem: true
+  FullItemFrames: true
+  TamedAnimals: true
+  NamedAnimals: true
+  WithSadle: true
+  BabyAnimals: true
+  Worlds: []
+
+# =============================================================================
+# Section 3 — SPAWN LIMITS
+# =============================================================================
+
+EntitySpawn:
+  Check: true
+  GroupChunks: true
+  # Radius: 1 = single chunk | 2 = 3×3 chunks | 3 = 5×5 chunks
+  GroupChunksRadius: 2
+
+Mobs:
+  WorldsAllow: []
+  DefaultPerType: 28              # Mob-cap types without an EntityTypes row; -1 disables this fallback
+  FallbackNonLivingLimit: -1      # Non-mob-cap types without a row; -1 disables
+  TotalMaxPerChunk: -1            # Total living (non-player) cap in counted area; -1 disables
+
+ExcludedChunks: []
+
+# If AutoClean.Enabled is not present under AutoClean, the root key RemoveExisting is used instead (defaults to true when omitted).
+
+# =============================================================================
+# Section 4 — AUTOCLEAN (scheduled waves)
+# =============================================================================
+#
+#   AutoClean.Enabled AND Mobs.Use     → mob cleanup waves
+#   AutoClean.Enabled AND Blocks.Use   → tracked block tile cleanup waves
+#
+# Interval / IntervalSeconds values are in SECONDS (×20 server ticks).
+# For tick-based timing only: set Interval to 0 and use IntervalTicks under Mobs / Blocks.
+
+AutoClean:
+  Enabled: true
+
+  Mobs:
+    Use: true
+    Interval: 5                   # Seconds between waves
+    MaxRemoved: 48                # Max removals attempted per chunk task in one pass
+    SliceChunksPerTick: 64        # Max chunk tasks scheduled per tick per wave; 0 or less = single burst (sharp lag spikes)
+    DeduplicateGroupCull: true    # With GroupChunks: only anchor chunks run mob cleanup (less duplicate work)
+
+  Blocks:
+    Use: true
+    Interval: 20
+    MaxRemoved: 12
+    BreakNaturally: false
+    SliceChunksPerTick: 64
+
+# =============================================================================
+# Section 5 — BLOCK TYPES (place limits + pistons)
+# =============================================================================
+#
+# Limit: false — List is reference only; placement is not capped.
+# Limit: true  — each material in List is capped per chunk.
+
+BlockTypes:
+  Limit: false
+  CheckPistonMove: true
+  List:
+    # --- Redstone ---
+    HOPPER: 12
+    PISTON: 16
+    STICKY_PISTON: 16
+    OBSERVER: 12
+    DISPENSER: 16
+    DROPPER: 16
+    COMPARATOR: 24
+    CALIBRATED_SCULK_SENSOR: 12
+    SCULK_SENSOR: 16
+    DAYLIGHT_DETECTOR: 16
+    # --- Furnaces / crafting ---
+    FURNACE: 16
+    BLAST_FURNACE: 12
+    SMOKER: 12
+    CRAFTER: 12
+    BREWING_STAND: 12
+    ENCHANTING_TABLE: 8
+    # --- Storage ---
+    CHEST: 32
+    TRAPPED_CHEST: 16
+    BARREL: 24
+    ENDER_CHEST: 8
+    SHULKER_BOX: 16
+    RED_SHULKER_BOX: 16
+    # --- Misc tiles ---
+    BEACON: 4
+    LECTERN: 12
+    JUKEBOX: 8
+    COMPOSTER: 12
+    SCULK_SHRIEKER: 8
+    SCULK_CATALYST: 12
+    DECORATED_POT: 16
+    VAULT: 4
+
+# =============================================================================
+# Section 6 — ENTITY TYPES
+# =============================================================================
+#
+# Per type: Use | Limit (-1 = unlimited) | AutoClean | NaturalSpawn
+#
+# Sensitive setups (adjust Limits carefully): FALLING_BLOCK · projectiles · END_CRYSTAL
+
+EntityTypes:
+  PLAYER:
+    Use: true
+    Limit: -1
+    AutoClean: true
+    NaturalSpawn: true
+
+  # --- Drops / XP ---
+  ITEM:
+    Use: true
+    Limit: 150
+    AutoClean: true
+    NaturalSpawn: true
+  EXPERIENCE_ORB:
+    Use: true
+    Limit: 75
+    AutoClean: true
+    NaturalSpawn: true
+
+  # --- Frames / minecarts ---
+  ITEM_FRAME:
+    Use: true
+    Limit: 24
+    AutoClean: true
+    NaturalSpawn: true
+  GLOW_ITEM_FRAME:
+    Use: true
+    Limit: 24
+    AutoClean: true
+    NaturalSpawn: true
+  HOPPER_MINECART:
+    Use: true
+    Limit: 4
+    AutoClean: true
+    NaturalSpawn: true
+  MINECART:
+    Use: true
+    Limit: 8
+    AutoClean: true
+    NaturalSpawn: true
+  CHEST_MINECART:
+    Use: true
+    Limit: 8
+    AutoClean: true
+    NaturalSpawn: true
+  FURNACE_MINECART:
+    Use: true
+    Limit: 6
+    AutoClean: true
+    NaturalSpawn: true
+  TNT_MINECART:
+    Use: true
+    Limit: 8
+    AutoClean: true
+    NaturalSpawn: true
+  COMMAND_BLOCK_MINECART:
+    Use: true
+    Limit: 4
+    AutoClean: true
+    NaturalSpawn: true
+  SPAWNER_MINECART:
+    Use: true
+    Limit: 4
+    AutoClean: true
+    NaturalSpawn: true
+
+  # --- Displays / markers ---
+  ARMOR_STAND:
+    Use: true
+    Limit: 48
+    AutoClean: true
+    NaturalSpawn: true
+  PAINTING:
+    Use: true
+    Limit: 64
+    AutoClean: true
+    NaturalSpawn: true
+  ITEM_DISPLAY:
+    Use: true
+    Limit: 32
+    AutoClean: true
+    NaturalSpawn: true
+  BLOCK_DISPLAY:
+    Use: true
+    Limit: 32
+    AutoClean: true
+    NaturalSpawn: true
+  TEXT_DISPLAY:
+    Use: true
+    Limit: 32
+    AutoClean: true
+    NaturalSpawn: true
+  INTERACTION:
+    Use: true
+    Limit: 32
+    AutoClean: true
+    NaturalSpawn: true
+  MARKER:
+    Use: true
+    Limit: 64
+    AutoClean: true
+    NaturalSpawn: true
+
+  # --- Projectiles ---
+  ARROW:
+    Use: true
+    Limit: 256
+    AutoClean: true
+    NaturalSpawn: true
+  SPECTRAL_ARROW:
+    Use: true
+    Limit: 128
+    AutoClean: true
+    NaturalSpawn: true
+  TRIDENT:
+    Use: true
+    Limit: 64
+    AutoClean: true
+    NaturalSpawn: true
+  SNOWBALL:
+    Use: true
+    Limit: 128
+    AutoClean: true
+    NaturalSpawn: true
+  EGG:
+    Use: true
+    Limit: 96
+    AutoClean: true
+    NaturalSpawn: true
+  ENDER_PEARL:
+    Use: true
+    Limit: 96
+    AutoClean: true
+    NaturalSpawn: true
+  EXPERIENCE_BOTTLE:
+    Use: true
+    Limit: 96
+    AutoClean: true
+    NaturalSpawn: true
+  SPLASH_POTION:
+    Use: true
+    Limit: 64
+    AutoClean: true
+    NaturalSpawn: true
+  LINGERING_POTION:
+    Use: true
+    Limit: 64
+    AutoClean: true
+    NaturalSpawn: true
+  WIND_CHARGE:
+    Use: true
+    Limit: 64
+    AutoClean: true
+    NaturalSpawn: true
+  BREEZE_WIND_CHARGE:
+    Use: true
+    Limit: 64
+    AutoClean: true
+    NaturalSpawn: true
+  FIREWORK_ROCKET:
+    Use: true
+    Limit: 96
+    AutoClean: true
+    NaturalSpawn: true
+  SMALL_FIREBALL:
+    Use: true
+    Limit: 48
+    AutoClean: true
+    NaturalSpawn: true
+  FIREBALL:
+    Use: true
+    Limit: 32
+    AutoClean: true
+    NaturalSpawn: true
+  DRAGON_FIREBALL:
+    Use: true
+    Limit: 24
+    AutoClean: true
+    NaturalSpawn: true
+  WITHER_SKULL:
+    Use: true
+    Limit: 24
+    AutoClean: true
+    NaturalSpawn: true
+  SHULKER_BULLET:
+    Use: true
+    Limit: 48
+    AutoClean: true
+    NaturalSpawn: true
+  FISHING_BOBBER:
+    Use: true
+    Limit: 32
+    AutoClean: true
+    NaturalSpawn: true
+
+  # --- Misc ---
+  AREA_EFFECT_CLOUD:
+    Use: true
+    Limit: 96
+    AutoClean: true
+    NaturalSpawn: true
+  FALLING_BLOCK:
+    Use: true
+    Limit: 128
+    AutoClean: true
+    NaturalSpawn: true
+  EVOKER_FANGS:
+    Use: true
+    Limit: 48
+    AutoClean: true
+    NaturalSpawn: true
+  END_CRYSTAL:
+    Use: true
+    Limit: 48
+    AutoClean: true
+    NaturalSpawn: true
+  LEASH_KNOT:
+    Use: true
+    Limit: 32
+    AutoClean: true
+    NaturalSpawn: true
+  TNT:
+    Use: true
+    Limit: 48
+    AutoClean: true
+    NaturalSpawn: true
+
+  # --- Boats (add other wood variants if needed) ---
+  OAK_BOAT:
+    Use: true
+    Limit: 16
+    AutoClean: true
+    NaturalSpawn: true
+  OAK_CHEST_BOAT:
+    Use: true
+    Limit: 12
+    AutoClean: true
+    NaturalSpawn: true
