@@ -37,7 +37,7 @@ Ignore:
   FullItemFrames: true
   TamedAnimals: true
   NamedAnimals: true
-  WithSadle: true
+  WithSaddle: true
   BabyAnimals: true
   Worlds: []
 
@@ -53,9 +53,11 @@ EntitySpawn:
 
 Mobs:
   WorldsAllow: []
-  DefaultPerType: 28              # Mob-cap types without an EntityTypes row; -1 disables this fallback
+  # Slightly below old default: still fine for natural farms, tighter on chunk mob pits
+  DefaultPerType: 24              # Mob-cap types without an EntityTypes row; -1 disables this fallback
   FallbackNonLivingLimit: -1      # Non-mob-cap types without a row; -1 disables
-  TotalMaxPerChunk: -1            # Total living (non-player) cap in counted area; -1 disables
+  # With GroupChunks: cap is over the whole group (e.g. 3×3). -1 = off. 128 ≈ anti runaway pit without killing normal herding
+  TotalMaxPerChunk: 128           # Total living (non-player) cap in counted area; -1 disables
 
 ExcludedChunks: []
 
@@ -76,15 +78,15 @@ AutoClean:
 
   Mobs:
     Use: true
-    Interval: 5                   # Seconds between waves
-    MaxRemoved: 48                # Max removals attempted per chunk task in one pass
+    Interval: 8                   # Seconds between waves (shorter = more CPU churn)
+    MaxRemoved: 32                # Max removals per chunk task per pass (lower = gentler tick spikes)
     SliceChunksPerTick: 64        # Max chunk tasks scheduled per tick per wave; 0 or less = single burst (sharp lag spikes)
     DeduplicateGroupCull: true    # With GroupChunks: only anchor chunks run mob cleanup (less duplicate work)
 
   Blocks:
     Use: true
-    Interval: 20
-    MaxRemoved: 12
+    Interval: 25
+    MaxRemoved: 8
     BreakNaturally: false
     SliceChunksPerTick: 64
 
@@ -100,13 +102,13 @@ BlockTypes:
   CheckPistonMove: true
   List:
     # --- Redstone ---
-    HOPPER: 12
+    HOPPER: 10
     PISTON: 16
     STICKY_PISTON: 16
-    OBSERVER: 12
-    DISPENSER: 16
-    DROPPER: 16
-    COMPARATOR: 24
+    OBSERVER: 10
+    DISPENSER: 14
+    DROPPER: 14
+    COMPARATOR: 20
     CALIBRATED_SCULK_SENSOR: 12
     SCULK_SENSOR: 16
     DAYLIGHT_DETECTOR: 16
@@ -118,9 +120,9 @@ BlockTypes:
     BREWING_STAND: 12
     ENCHANTING_TABLE: 8
     # --- Storage ---
-    CHEST: 32
-    TRAPPED_CHEST: 16
-    BARREL: 24
+    CHEST: 28
+    TRAPPED_CHEST: 14
+    BARREL: 20
     ENDER_CHEST: 8
     SHULKER_BOX: 16
     RED_SHULKER_BOX: 16
@@ -152,12 +154,12 @@ EntityTypes:
   # --- Drops / XP ---
   ITEM:
     Use: true
-    Limit: 300
+    Limit: 160
     AutoClean: true
     NaturalSpawn: true
   EXPERIENCE_ORB:
-    Use: false
-    Limit: 75
+    Use: true
+    Limit: 120
     AutoClean: true
     NaturalSpawn: true
 
@@ -174,22 +176,22 @@ EntityTypes:
     NaturalSpawn: true
   HOPPER_MINECART:
     Use: true
-    Limit: 4
+    Limit: 16
     AutoClean: true
     NaturalSpawn: true
   MINECART:
     Use: true
-    Limit: 8
+    Limit: 32
     AutoClean: true
     NaturalSpawn: true
   CHEST_MINECART:
     Use: true
-    Limit: 8
+    Limit: 32
     AutoClean: true
     NaturalSpawn: true
   FURNACE_MINECART:
     Use: true
-    Limit: 6
+    Limit: 24
     AutoClean: true
     NaturalSpawn: true
   TNT_MINECART:
@@ -211,161 +213,161 @@ EntityTypes:
   # --- Displays / markers ---
   ARMOR_STAND:
     Use: true
-    Limit: 48
+    Limit: 36
     AutoClean: true
     NaturalSpawn: true
   PAINTING:
     Use: true
-    Limit: 64
+    Limit: 48
     AutoClean: true
     NaturalSpawn: true
   ITEM_DISPLAY:
     Use: true
-    Limit: 32
+    Limit: 24
     AutoClean: true
     NaturalSpawn: true
   BLOCK_DISPLAY:
     Use: true
-    Limit: 32
+    Limit: 24
     AutoClean: true
     NaturalSpawn: true
   TEXT_DISPLAY:
     Use: true
-    Limit: 32
+    Limit: 24
     AutoClean: true
     NaturalSpawn: true
   INTERACTION:
     Use: true
-    Limit: 32
+    Limit: 24
     AutoClean: true
     NaturalSpawn: true
   MARKER:
     Use: true
-    Limit: 64
+    Limit: 48
     AutoClean: true
     NaturalSpawn: true
 
   # --- Projectiles ---
   ARROW:
     Use: true
-    Limit: 256
+    Limit: 160
     AutoClean: true
     NaturalSpawn: true
   SPECTRAL_ARROW:
     Use: true
-    Limit: 128
+    Limit: 96
     AutoClean: true
     NaturalSpawn: true
   TRIDENT:
     Use: true
-    Limit: 64
+    Limit: 48
     AutoClean: true
     NaturalSpawn: true
   SNOWBALL:
     Use: true
-    Limit: 128
+    Limit: 96
     AutoClean: true
     NaturalSpawn: true
   EGG:
     Use: true
-    Limit: 96
+    Limit: 72
     AutoClean: true
     NaturalSpawn: true
   ENDER_PEARL:
     Use: true
-    Limit: 96
+    Limit: 72
     AutoClean: true
     NaturalSpawn: true
   EXPERIENCE_BOTTLE:
     Use: true
-    Limit: 96
+    Limit: 72
     AutoClean: true
     NaturalSpawn: true
   SPLASH_POTION:
     Use: true
-    Limit: 64
+    Limit: 48
     AutoClean: true
     NaturalSpawn: true
   LINGERING_POTION:
     Use: true
-    Limit: 64
+    Limit: 48
     AutoClean: true
     NaturalSpawn: true
   WIND_CHARGE:
     Use: true
-    Limit: 64
+    Limit: 48
     AutoClean: true
     NaturalSpawn: true
   BREEZE_WIND_CHARGE:
     Use: true
-    Limit: 64
+    Limit: 48
     AutoClean: true
     NaturalSpawn: true
   FIREWORK_ROCKET:
     Use: true
-    Limit: 96
+    Limit: 72
     AutoClean: true
     NaturalSpawn: true
   SMALL_FIREBALL:
     Use: true
-    Limit: 48
+    Limit: 40
     AutoClean: true
     NaturalSpawn: true
   FIREBALL:
     Use: true
-    Limit: 32
+    Limit: 24
     AutoClean: true
     NaturalSpawn: true
   DRAGON_FIREBALL:
     Use: true
-    Limit: 24
+    Limit: 20
     AutoClean: true
     NaturalSpawn: true
   WITHER_SKULL:
     Use: true
-    Limit: 24
+    Limit: 20
     AutoClean: true
     NaturalSpawn: true
   SHULKER_BULLET:
     Use: true
-    Limit: 48
+    Limit: 40
     AutoClean: true
     NaturalSpawn: true
   FISHING_BOBBER:
     Use: true
-    Limit: 32
+    Limit: 24
     AutoClean: true
     NaturalSpawn: true
 
   # --- Misc ---
   AREA_EFFECT_CLOUD:
     Use: true
-    Limit: 96
+    Limit: 72
     AutoClean: true
     NaturalSpawn: true
   FALLING_BLOCK:
     Use: true
-    Limit: 128
+    Limit: 64
     AutoClean: true
     NaturalSpawn: true
   EVOKER_FANGS:
     Use: true
-    Limit: 48
+    Limit: 40
     AutoClean: true
     NaturalSpawn: true
   END_CRYSTAL:
     Use: true
-    Limit: 48
+    Limit: 16
     AutoClean: true
     NaturalSpawn: true
   LEASH_KNOT:
     Use: true
-    Limit: 32
+    Limit: 24
     AutoClean: true
     NaturalSpawn: true
   TNT:
     Use: true
-    Limit: 48
+    Limit: 24
     AutoClean: true
     NaturalSpawn: true
 
