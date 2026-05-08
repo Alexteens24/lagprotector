@@ -152,11 +152,11 @@ EntityTypes:
   # --- Drops / XP ---
   ITEM:
     Use: true
-    Limit: 150
+    Limit: 300
     AutoClean: true
     NaturalSpawn: true
   EXPERIENCE_ORB:
-    Use: true
+    Use: false
     Limit: 75
     AutoClean: true
     NaturalSpawn: true
