@@ -10,5 +10,3 @@
 .project
 .settings/
 bin/
-.vscode/
-gradle/
