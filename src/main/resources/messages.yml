@@ -1,8 +1,11 @@
-# LagProtector — messages (& = color codes for players)
+# LagProtector — player chat uses legacy & codes (Adventure).
+# Pattern: dim brackets + accent marker + gray name + dim » + message body
+
 command:
-  no-permission: "&cYou do not have permission."
-  reload-success: "&aLagProtector configuration reloaded."
-  usage: "&eUsage: /lagprotector reload"
+  no-permission: "&8[&c&l✖&8] &7LagProtector &8» &cYou do not have permission."
+  reload-success: "&8[&a&l✔&8] &7LagProtector &8» &aConfiguration reloaded. &8(&7limits active&8)"
+  usage: "&8[&e&l?&8] &7LagProtector &8» &7Command: &f/lagprotector reload"
+
 log:
-  # Placeholder: {count} = entities removed in one mob cleanup pass
-  cull-removed: "[LagProtector] Removed {count} excess entities (cull pass)."
+  # Placeholder: {count} — serialized to plain text for console (colors stripped)
+  cull-removed: "&8[&bLP&8] &7Cull pass &8· &e{count} &7excess entities removed."

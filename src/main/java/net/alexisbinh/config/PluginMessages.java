@@ -43,20 +43,24 @@ public final class PluginMessages {
     }
 
     public @NotNull Component commandNoPermission() {
-        return LEGACY_AMPERSAND.deserialize(messages.getString("command.no-permission", "&cYou do not have permission."));
+        return LEGACY_AMPERSAND.deserialize(messages.getString("command.no-permission",
+                "&8[&c&l✖&8] &7LagProtector &8» &cYou do not have permission."));
     }
 
     public @NotNull Component commandReloadSuccess() {
-        return LEGACY_AMPERSAND.deserialize(messages.getString("command.reload-success", "&aLagProtector configuration reloaded."));
+        return LEGACY_AMPERSAND.deserialize(messages.getString("command.reload-success",
+                "&8[&a&l✔&8] &7LagProtector &8» &aConfiguration reloaded. &8(&7limits active&8)"));
     }
 
     public @NotNull Component commandUsage() {
-        return LEGACY_AMPERSAND.deserialize(messages.getString("command.usage", "&eUsage: /lagprotector reload"));
+        return LEGACY_AMPERSAND.deserialize(messages.getString("command.usage",
+                "&8[&e&l?&8] &7LagProtector &8» &7Command: &f/lagprotector reload"));
     }
 
     /** Plain text for {@link java.util.logging.Logger} (strip legacy § codes if present). */
     public @NotNull String logCullRemoved(int count) {
-        String template = messages.getString("log.cull-removed", "[LagProtector] Removed {count} excess entities (cull pass).");
+        String template = messages.getString("log.cull-removed",
+                "&8[&bLP&8] &7Cull pass &8· &e{count} &7excess entities removed.");
         Component line = LEGACY_AMPERSAND.deserialize(template.replace("{count}", String.valueOf(count)));
         return PlainTextComponentSerializer.plainText().serialize(line);
     }

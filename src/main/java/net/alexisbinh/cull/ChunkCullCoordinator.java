@@ -160,17 +160,20 @@ public final class ChunkCullCoordinator {
         for (int i = mobCullQueueIndex; i < end; i++) {
             ChunkRef ref = queue.get(i);
             World world = ref.world;
-            Chunk chunk = world.getChunkAt(ref.chunkX, ref.chunkZ);
-            if (!chunk.isLoaded()) {
-                continue;
-            }
-            Location loc = anchor(world, chunk);
+            final int cx = ref.chunkX;
+            final int cz = ref.chunkZ;
+            // Folia: never call getChunkAt from GlobalRegionScheduler; anchor loc only uses coords + world height.
+            Location loc = anchor(world, cx, cz);
             regionScheduler.run(plugin, loc, t -> {
                 PluginConfig live = plugin.configState();
                 if (!live.mobs().cull().enabled()) {
                     return;
                 }
-                if (live.mobs().isChunkExcluded(world, chunk.getX(), chunk.getZ())) {
+                if (live.mobs().isChunkExcluded(world, cx, cz)) {
+                    return;
+                }
+                Chunk chunk = world.getChunkAt(cx, cz);
+                if (!chunk.isLoaded()) {
                     return;
                 }
                 cullEntities(chunk, live);
@@ -241,14 +244,16 @@ public final class ChunkCullCoordinator {
         for (int i = mechCullQueueIndex; i < end; i++) {
             ChunkRef ref = queue.get(i);
             World world = ref.world;
-            Chunk chunk = world.getChunkAt(ref.chunkX, ref.chunkZ);
-            if (!chunk.isLoaded()) {
-                continue;
-            }
-            Location loc = anchor(world, chunk);
+            final int cx = ref.chunkX;
+            final int cz = ref.chunkZ;
+            Location loc = anchor(world, cx, cz);
             regionScheduler.run(plugin, loc, t -> {
                 PluginConfig live = plugin.configState();
                 if (!live.mechanics().enabled() || !live.mechanics().cull().enabled()) {
+                    return;
+                }
+                Chunk chunk = world.getChunkAt(cx, cz);
+                if (!chunk.isLoaded()) {
                     return;
                 }
                 cullMechanicsBlocks(chunk, live);
@@ -283,9 +288,10 @@ public final class ChunkCullCoordinator {
         }
     }
 
-    private static @NotNull Location anchor(@NotNull World world, @NotNull Chunk chunk) {
+    /** Region-scheduler anchor for a chunk key; safe to call from global (no chunk load). */
+    private static @NotNull Location anchor(@NotNull World world, int chunkX, int chunkZ) {
         int y = Math.clamp((world.getMinHeight() + world.getMaxHeight()) / 2, world.getMinHeight(), world.getMaxHeight() - 1);
-        return new Location(world, (chunk.getX() << 4) + 8, y, (chunk.getZ() << 4) + 8);
+        return new Location(world, (chunkX << 4) + 8, y, (chunkZ << 4) + 8);
     }
 
     private @NotNull List<Chunk> chunksFor(@NotNull Chunk origin, @NotNull PluginConfig cfg) {

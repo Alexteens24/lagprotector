@@ -20,6 +20,7 @@ import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ThreadLocalRandom;
 import net.alexisbinh.config.PluginConfig;
 import net.alexisbinh.config.PluginMessages;
 import net.alexisbinh.cull.ChunkCullCoordinator;
@@ -35,6 +36,28 @@ import org.jetbrains.annotations.Nullable;
 public final class LagProtectorPlugin extends JavaPlugin {
 
     private static final int PLUGIN_METRICS_ID = 31208;
+
+    /** Console-only easter eggs (English). */
+    private static final String[] ENABLE_EASTER_EGGS = {
+            "Tick budget: guarded. Sand dupers: on thin ice.",
+            "Your chunks called. They asked for fewer entities. I agreed.",
+            "Enabled. I do not judge your farm — I count it.",
+            "Paper says relax; your redstone says sprint. I referee.",
+            "Limits live. Blame the config, not the messenger.",
+            "Here to stop the server from doing a barrel roll into 4 TPS.",
+            "Spawn gates closed… slightly. Peek through the numbers.",
+            "Folia thread vibes: stay in your lane. Entities: same deal.",
+    };
+
+    private static final String[] DISABLE_EASTER_EGGS = {
+            "Disabled. The entities are unsupervised again — behave.",
+            "Stopping. May your next reboot be boring and green.",
+            "Off. I will pretend I did not see that chunk over there.",
+            "Goodnight. Dream in 20 TPS, wake in whatever you earned.",
+            "Cleanup waves halted. The lag you keep is yours to keep.",
+            "Shutdown. Config saved; chaos optional.",
+            "Bye. Tell Paper I said hi — from a safe distance.",
+    };
 
     private PluginConfig pluginConfig;
     private final PluginMessages pluginMessages = new PluginMessages();
@@ -57,6 +80,7 @@ public final class LagProtectorPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new MechanicsPistonListener(this), this);
 
         registerCommand("lagprotector", new LagProtectorPaperCommand());
+        logRandomEasterEgg(ENABLE_EASTER_EGGS);
     }
 
     @Override
@@ -64,6 +88,14 @@ public final class LagProtectorPlugin extends JavaPlugin {
         if (cullCoordinator != null) {
             cullCoordinator.stop();
         }
+        logRandomEasterEgg(DISABLE_EASTER_EGGS);
+    }
+
+    private void logRandomEasterEgg(@NotNull String[] lines) {
+        if (lines.length == 0) {
+            return;
+        }
+        getLogger().info(lines[ThreadLocalRandom.current().nextInt(lines.length)]);
     }
 
     private final class LagProtectorPaperCommand implements BasicCommand {
